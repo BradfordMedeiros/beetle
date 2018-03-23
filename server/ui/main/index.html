@@ -1,0 +1,74 @@
+<html>
+	<body>	
+		<div id="content">
+			<div id="title_bar">
+				<div id="title">beetle</div>
+				<div onclick="location = '../add_new/index.html'" id="add_new">add new</div>
+			</div>
+			<div id="status_bar">
+				<div id="status_item">Configured Download: Linux</div>
+			</div>
+			<div id="inner" ></div>
+		</div>
+	</body>
+	<head>
+		<title>beetle</title>
+		<link rel="stylesheet" href="style.css">
+		<script>
+			// network /////////////
+			const getInstallTargets = () => new Promise((resolve, reject) => {
+			  fetch('http://localhost:3000/targets/').then(response => {
+			    response.json().then(resolve).catch(reject);
+			  }).catch(reject);
+            });
+
+			const setInstallTarget = target => {
+			  fetch(`http://localhost:3000/targets/${target.target}`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: new Headers({
+                  'Content-Type': 'application/json',
+                  Accept: 'application/json',
+                }),
+              });
+			};
+			//////////////////////////
+
+		  	let selectedIndex = 0;
+		  	let targets = [];
+
+
+            const onClickElement = target => {
+              selectedIndex = targets.indexOf(target);
+              setInstallTarget(target);
+              render();
+            };
+			const generateTarget = (target, isSelected) => {
+			  const element = document.createElement('div');
+			  element.innerText = target.target;
+			  element.className = isSelected ? 'install_target selected' : 'install_target';
+			  element.onclick = () => onClickElement(target);
+			  return element;
+			};
+			const populateInstallationTargets = (targets, selectedIndex) => {
+				const element = document.getElementById('inner');
+                element.innerHTML = '';
+                targets.map((target, index) =>
+					generateTarget(target, selectedIndex === index)).forEach(targetElement => element.appendChild(targetElement));
+			};
+            const render = () => {
+              console.log('targets: ', targets)
+              populateInstallationTargets(targets, selectedIndex);
+            };
+
+            getInstallTargets().then(loadedTargets => {
+              console.log('loaded targets: ', targets);
+              targets = loadedTargets;
+              selectedIndex = loadedTargets.map(target => target.selected === true).indexOf(true);
+
+              render();
+            });
+			render();
+		</script>
+	</head>
+</html>

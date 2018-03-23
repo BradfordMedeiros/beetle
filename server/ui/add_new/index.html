@@ -1,0 +1,33 @@
+<html>
+
+<body>
+<div id="content">
+    <div id="title_bar">
+        <div onclick="location = '../main/index.html' " id="title">beetle</div>
+    </div>
+    <div id="inner" >
+        <div id="add_content_type">
+            <div id="add_from_zip">From zip file</div>
+            <input onchange="handleChange(event)" type="file"/>
+            <button onclick="handleSubmit()">submit</button>
+        </div>
+    </div>
+</div>
+</body>
+<head>
+    <title>beetle</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        let selectedFile = undefined;
+        const uploadFile =  () =>  {
+
+        };
+        const handleSubmit = () => {
+
+        };
+        const handleChange = () => {
+          console.log('file changed: ', event.target.files);
+        };
+    </script>
+</head>
+</html>
