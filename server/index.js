@@ -49,6 +49,8 @@ const getPackageNameFromTmpDirectory = tmpDirectory => new Promise((resolve, rej
 
 
 const processRawPackage = async (tmp_upload_file, tmpDirectory) => {
+  let isValid = true;
+
   await fs.mkdirp(tmpDirectory);
   await tar.x({
     file: tmp_upload_file,
@@ -56,6 +58,14 @@ const processRawPackage = async (tmp_upload_file, tmpDirectory) => {
   });
 
   const packageName = await getPackageNameFromTmpDirectory(tmpDirectory);
+
+  const exists = await new Promise(resolve => fs.exists(path.resolve('package', packageName), exists => resolve(exists)));
+
+  if (exists === false){
+    await fs.copy(tmpDirectory, path.resolve('package', packageName));
+  }else{
+    isValid = false;
+  }
 
   const deleteTmpUploadPromise  = new Promise((resolve, reject) => fs.unlink(tmp_upload_file, err => {
     if (err){
@@ -67,7 +77,9 @@ const processRawPackage = async (tmp_upload_file, tmpDirectory) => {
 
   await deleteTmpUploadPromise;
   await fs.remove(tmpDirectory);
-
+  if (isValid === false){
+    throw (new Error('package already exists'));
+  }
 };
 
 app.post('/package', (req, res) => {
@@ -77,11 +89,15 @@ app.post('/package', (req, res) => {
   });
 
   form.parse(req, async (err, fields, files) => {
-    await Object.keys(files).map(async fileName => {
-      const filePath = files[fileName].path;
-      await processRawPackage(filePath, path.resolve('./package', path.basename(filePath)));
-    });
-    res.send('ok');
+    try {
+      await Promise.all(Object.keys(files).map(async fileName => {
+        const filePath = files[fileName].path;
+        return await processRawPackage(filePath, path.resolve('./package_unzip', path.basename(filePath)));
+      }));
+      res.send('ok');
+    }catch(err){
+      res.status(400).send('package already exists');
+    }
   });
 });
 
