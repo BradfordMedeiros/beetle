@@ -57,15 +57,12 @@
 					generateTarget(target, selectedIndex === index)).forEach(targetElement => element.appendChild(targetElement));
 			};
             const render = () => {
-              console.log('targets: ', targets)
               populateInstallationTargets(targets, selectedIndex);
             };
 
             getInstallTargets().then(loadedTargets => {
-              console.log('loaded targets: ', targets);
               targets = loadedTargets;
               selectedIndex = loadedTargets.map(target => target.selected === true).indexOf(true);
-
               render();
             });
 			render();

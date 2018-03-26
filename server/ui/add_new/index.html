@@ -18,15 +18,25 @@
     <title>beetle</title>
     <link rel="stylesheet" href="style.css">
     <script>
-        let selectedFile = undefined;
-        const uploadFile =  () =>  {
-
+        let formData = null;
+        const uploadFile =  formData => {
+          fetch('http://localhost:3000/package/', {
+            method: 'POST',
+            mode: 'cors',
+            body: formData,
+          });
         };
-        const handleSubmit = () => {
 
+        const handleSubmit = () => {
+          if (formData) {
+            uploadFile(formData);
+          }
         };
         const handleChange = () => {
-          console.log('file changed: ', event.target.files);
+          const file = event.target.files[0];
+          const form = new FormData();
+          form.append('upload', file)
+          formData = form;
         };
     </script>
 </head>
