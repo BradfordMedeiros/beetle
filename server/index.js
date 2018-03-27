@@ -4,11 +4,11 @@ const formidable = require('formidable');
 const uuid = require('uuid');
 const tar = require('tar');
 const fs = require('fs-extra');
+const getPackageManager = require('./src/getPackageManager');
+
+const packageManager = getPackageManager(path.resolve('./package'), path.resolve('./persist/data.json'));
 
 const app = express();
-
-let selectedIndex = 0;
-const targets = ['raspberry pi', 'cool one', 'linux', 'swag shit'];
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -17,23 +17,19 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/targets', (req, res) => {
-  res.jsonp(targets.map((target, index) => ({
-    target,
-    selected: selectedIndex === index,
-  })));
+
+app.get('/targets', async (req, res) => {
+  res.jsonp(await packageManager.getPackageInfo());
 });
-app.get('/targets/target', (req, res) => {
-  res.send(targets[selectedIndex]);
+app.get('/targets/target', async (req, res) => {
+  res.send(await packageManager.getSelectedPackage());
 });
-app.post('/targets/:target', (req, res) => {
+app.post('/targets/:target', async (req, res) => {
   const target = req.params.target;
-  const requestedSelectedIndex = targets.indexOf(target);
-  if (requestedSelectedIndex >= 0){
-    selectedIndex = requestedSelectedIndex;
-  }
+  await packageManager.setSelectedPackage(target);
   res.send('ok');
 });
+
 
 const getPackageNameFromTmpDirectory = tmpDirectory => new Promise((resolve, reject) => {
   fs.readFile(path.resolve(tmpDirectory, 'manifest.json'), (err, result) => {
