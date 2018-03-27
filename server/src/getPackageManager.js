@@ -1,5 +1,5 @@
-
 const fs = require('fs-extra');
+const path = require('path');
 
 const readPackages = packageDirectory => new Promise((resolve, reject) => {
   fs.readdir(packageDirectory, (err, result) => {
@@ -49,10 +49,16 @@ const getPackageManager = (packageDirectory, persistFile) => {
     return selectedPackage;
   };
 
+  const deletePackage = async packageName => {
+    const directory = path.resolve(packageDirectory, packageName);
+    return fs.remove(directory);
+  }
+
   return ({
     getPackageInfo,
     setSelectedPackage,
     getSelectedPackage,
+    deletePackage,
   })
 };
 

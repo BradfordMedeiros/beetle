@@ -29,6 +29,16 @@ app.post('/targets/:target', async (req, res) => {
   await packageManager.setSelectedPackage(target);
   res.send('ok');
 });
+app.delete('/targets/:target', async (req, res) => {
+  const target = req.params.target;
+  try {
+    await packageManager.deletePackage(target);
+    res.send('ok');
+  }catch(e){
+    console.log(e);
+    res.status(400).jsonp({ error: 'Cannot delete package' });
+  }
+});
 
 
 const getPackageNameFromTmpDirectory = tmpDirectory => new Promise((resolve, reject) => {
