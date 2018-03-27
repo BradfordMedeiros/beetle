@@ -1,5 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
+const child_process = require('child_process');
+const process = require('process');
 
 const readPackages = packageDirectory => new Promise((resolve, reject) => {
   fs.readdir(packageDirectory, (err, result) => {
@@ -33,6 +35,21 @@ const writeSelectedIndex = (persistFile, selectedIndex) => new Promise((resolve,
   })
 });
 
+const activateSelectedPackage = packageName => new Promise((resolve, reject) => {
+  if (process.env.DEBUG){
+    resolve();
+    return;
+  }
+
+  child_process.exec(`set_active_package ${packageName}`, err => {
+    if(err){
+      reject(err);
+      return;
+    }
+    resolve();
+  });
+});
+
 const getPackageManager = (packageDirectory, persistFile) => {
   const getPackageInfo = async () => {
     const selectedPackage = await getSelectedPackage();
@@ -42,7 +59,10 @@ const getPackageManager = (packageDirectory, persistFile) => {
     }));
   };
 
-  const setSelectedPackage = async packageName => await writeSelectedIndex(persistFile, packageName);
+  const setSelectedPackage = async packageName => {
+    await writeSelectedIndex(persistFile, packageName);
+    await activateSelectedPackage(packageName);
+  }
 
   const getSelectedPackage = async () => {
     const selectedPackage = await readSelectedIndex(persistFile);
