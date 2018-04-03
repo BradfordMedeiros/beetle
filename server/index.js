@@ -17,6 +17,8 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/', (req, res) => res.redirect('./ui/main/index.html'));
+app.use('/ui', express.static(path.resolve('./ui')));
 
 app.get('/targets', async (req, res) => {
   res.jsonp(await packageManager.getPackageInfo());
